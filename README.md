@@ -30,7 +30,7 @@ Run these make commands in order to build and install minetester.
 If anything goes wrong during install, inspect the relevant entry/script in the Makefile to see what it's trying to do.
 
 ```bash
-make deb_deps #install debian dependencies, equivalent commands are nessesary for other distros
+make linux_deps #install debian dependencies, equivalent commands are nessesary for other distros
 make python_build_deps #install build dependencies into the local python environment (we reccomend using a venv)
 make repos #init submodules
 make sdl2 #build sdl2
