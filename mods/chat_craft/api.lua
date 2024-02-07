@@ -183,6 +183,8 @@ function chat_craft.get_craftable_recipes(player)
 		end
 	end
 
+	--minetest.debug(r)
+
 	return r
 end
 
@@ -194,7 +196,14 @@ function chat_craft.craft(player, recipe_index, amount)
 	local inv_list = chat_craft.inv_to_table(inv)
 
 	amount = math.min(amount, chat_craft.get_craft_amount(recipe, inv_list))
+	
 	if amount == 0 then 
+		-- these lines tells you what you need to craft
+		for in_item, count in pairs(recipe.input) do
+			minetest.debug(in_item)
+		end
+
+		
 		minetest.debug("Insufficient materials to craft item.")
 		return 
 	end
@@ -255,4 +264,105 @@ function chat_craft.craft(player, recipe_index, amount)
 		local leftover = inv:add_item("main", item .. " " .. total % stack_max)
 		minetest.add_item(pos, leftover)
 	end
+end
+
+
+function chat_craft.craft_mult(player, recipe_indexes, amount)
+	local recipes = {}
+	for i =1,#recipe_indexes,1 do
+
+		recipes[i] = registered_crafts[recipe_indexes[i]]
+		-- for in_item, count in pairs(recipes[i].input) do
+		-- 	minetest.debug(in_item)
+		-- 	minetest.debug(count)
+		-- end
+
+	end
+
+	--local recipe = registered_crafts[recipe_index]
+	local inv = player:get_inventory()
+	local inv_list = chat_craft.inv_to_table(inv)
+
+
+	holder = amount
+	for i = 1,#recipes,1 do
+		-- minetest.debug(recipes[i])
+		--minetest.debug(amount)
+
+		amount = holder
+		amount = math.min(amount, chat_craft.get_craft_amount(recipes[i], inv_list))
+
+		if amount ~= 0 then 
+			recipe = recipes[i]
+			-- these lines tells you what you need to craft
+			-- for in_item, count in pairs(recipe.input) do
+			-- 	minetest.debug(in_item)
+			-- end
+			
+			--minetest.debug("Insufficient materials to craft item.")
+			--return 
+		end
+	end
+
+	if(recipe == nil) then return end
+
+	if not chat_craft.is_recipe_condition_fulfiled(recipe, player) then return end
+
+	-- taking input
+	for in_item, count in pairs(recipe.input) do
+		local total = count * amount
+		-- some items could be counted twice here, see warning
+		if in_item:find("group") then
+			local groups = in_item:sub(7, -1):split()
+
+			for inv_item, inv_count in pairs(inv_list) do
+				local suitable = true
+				for _, group in pairs(groups) do
+					if minetest.get_item_group(inv_item, group) == 0 then
+						suitable = false
+					end
+				end
+				if suitable then
+					local taken = inv:remove_item("main", inv_item .. " " .. total)
+					total = total - taken:get_count()
+					if total == 0 then break end
+				end
+			end
+		else
+			inv:remove_item("main", in_item .. " " .. total)
+		end
+	end
+
+	local total = recipe.output[2] * amount
+
+	local craft_result = ItemStack(recipe.output[1] .. " " .. total)
+	for _, on_craft in ipairs(chat_craft.registered_on_crafts) do
+		on_craft(player, craft_result, table.copy(recipe))
+	end
+
+	-- giving ouput
+	local pos = player:get_pos()
+	local stack_max = recipe.output.def.stack_max
+	-- is split up to avoid overly large itemstacks
+	for i = 1, math.floor(total / stack_max) do
+		local leftover = inv:add_item("main", recipe.output[1] .. " " .. stack_max)
+		minetest.add_item(pos, leftover)
+	end
+	local leftover = inv:add_item("main", recipe.output[1] .. " " .. total % stack_max)
+	minetest.add_item(pos, leftover)
+
+	-- additional outputs
+	for item, count in pairs(recipe.additional_output) do
+		-- print(item)
+		local total = count * amount
+		local stack_max = minetest.registered_items[item].stack_max
+		for i = 1, math.floor(total / stack_max) do
+			local leftover = inv:add_item("main", item .. " " .. stack_max)
+			minetest.add_item(pos, leftover)
+		end
+		local leftover = inv:add_item("main", item .. " " .. total % stack_max)
+		minetest.add_item(pos, leftover)
+	end
+
+
 end

@@ -143,6 +143,22 @@ local function print_table(po)
 	end
 end
 
+local function print_table_name(po, craft_index)
+	for index, recipe in ipairs(chat_craft.registered_crafts) do
+		--minetest.debug(recipe_name)
+		local recipe_name = string.match(recipe.output[1], ":(.-)$")
+
+
+		--minetest.debug(recipe.input.in_item)
+		minetest.debug(recipe_name)
+
+
+		--if recipe_name == item_name then
+		--	return index
+		--end
+	end
+end
+
 chat_craft.register_condition("none", {
 	func = function(player) return true end
 })
@@ -196,12 +212,32 @@ minetest.register_chatcommand("chat_craft", {
 		if not player then
             return false, "Player not found"
         end
+
+		
+
 		local item_name = param:trim()
+
 		-- Find the recipe index for the specified item
+		local craft_indexes = find_recipe_indexes(item_name)
 		local craft_index = find_recipe_index(item_name)
+
+		--minetest.debug(craft_index)
+
+		-- for i=1,#craft_indexes,1 do 
+		--   	minetest.debug(craft_indexes[i])
+		-- 	chat_craft.craft(player, craft_indexes[i], 1)
+		-- 	minetest.debug('next')
+		-- end
+		
+		--print_table_name(chat_craft.registered_crafts, craft_index) -- gets all items 
+		
 		if craft_index then
 			-- Craft 1 of the specified item
-			chat_craft.craft(player, craft_index, 1)
+			
+			-- chat_craft.craft(player, craft_index, 1)
+
+			chat_craft.craft_mult(player,craft_indexes, 1)
+
 			-- You may want to update the formspec here if needed
 			return true, "Crafting " .. item_name
 		else
@@ -220,6 +256,21 @@ function find_recipe_index(item_name)
 	end
 
 	return nil
+end
+
+function find_recipe_indexes(item_name)
+	local indexes = {}
+	for index, recipe in ipairs(chat_craft.registered_crafts) do
+		local recipe_name = string.match(recipe.output[1], ":(.-)$")
+		if recipe_name == item_name then
+			indexes[#indexes +1] = index
+		end
+	end
+	if(#indexes ~= 0) then
+		return indexes
+	else
+		return nil
+	end
 end
 
 
