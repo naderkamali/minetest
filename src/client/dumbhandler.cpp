@@ -143,6 +143,9 @@ void DumbClientInputHandler::step(float dtime) {
     mousespeed = v2s32(action.mousedx(), action.mousedy());
     mousepos += mousespeed;
 
+    // Update item crafting index
+    craftingIndex = action.craftingindex();
+
     if (isGuiOpen != wasGuiOpen) {
         mousepos = v2s32(screenDims[0] / 2, screenDims[1] / 2);
         // make sure player is not continuously pressing keys after opening menu

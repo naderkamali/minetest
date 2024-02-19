@@ -35,6 +35,7 @@ INV_KEY_MAP = {value: key for key, value in KEY_MAP.items()}
 # Define noop action
 NOOP_ACTION = {key: 0 for key in KEY_MAP.keys()}
 NOOP_ACTION.update({"MOUSE": np.zeros(2, dtype=int)})
+NOOP_ACTION.update({"CRAFT": -1})
 
 
 def unpack_pb_obs(received_obs: str):
@@ -55,6 +56,7 @@ def unpack_pb_obs(received_obs: str):
 def unpack_pb_action(pb_action: pb_objects.Action):
     action = dict(NOOP_ACTION)
     action["MOUSE"] = [pb_action.mouseDx, pb_action.mouseDy]
+    action["CRAFT"] = int(pb_action.craftingIndex)
     for key_event in pb_action.keyEvents:
         if key_event.key in INV_KEY_MAP and key_event.eventType == pb_objects.PRESS:
             key_name = INV_KEY_MAP[key_event.key]
@@ -65,8 +67,9 @@ def unpack_pb_action(pb_action: pb_objects.Action):
 def pack_pb_action(action: Dict[str, Any]):
     pb_action = pb_objects.Action()
     pb_action.mouseDx, pb_action.mouseDy = action["MOUSE"]
+    pb_action.craftingIndex = action["CRAFT"]
     for key, v in action.items():
-        if key == "MOUSE":
+        if key == "MOUSE" or key == "CRAFT":
             continue
         pb_action.keyEvents.append(
             pb_objects.KeyboardEvent(

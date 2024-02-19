@@ -143,6 +143,12 @@ local function print_table(po)
 	end
 end
 
+local function print_recipes()
+	for index, recipe in ipairs(chat_craft.registered_crafts) do
+		minetest.debug(recipe.output[1])
+	end
+end
+
 chat_craft.register_condition("none", {
 	func = function(player) return true end
 })
@@ -196,6 +202,7 @@ minetest.register_chatcommand("chat_craft", {
 		if not player then
             return false, "Player not found"
         end
+        	-- print_recipes()
 		local item_name = param:trim()
 		-- Find the recipe index for the specified item
 		local craft_index = find_recipe_index(item_name)

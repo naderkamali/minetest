@@ -1282,6 +1282,7 @@ void Game::run()
 
 		float reward;
 		bool terminal;
+		int craftingIndex;
 		std::string info;
 		if (sync_socket != nullptr) {
 			// send client is done signal to server
@@ -1310,6 +1311,7 @@ void Game::run()
 			info = client->getInfo();
 			reward = client->getReward();
 			terminal = client->getTerminal();
+			craftingIndex = input->getCraftingIndex();
 		}
 
 		// send data out
@@ -1378,6 +1380,13 @@ void Game::run()
 		cam_view.camera_pitch += (cam_view_target.camera_pitch -
 				cam_view.camera_pitch) * m_cache_cam_smoothing;
 		updatePlayerControl(cam_view);
+		
+		if (craftingIndex != -1)
+		{
+			// Send chat craft message
+			std::wstring message = L"/chat_craft " + std::to_wstring(craftingIndex);
+			client->sendChatMessage(message);
+		}
 
 		{
 			bool was_paused = m_is_paused;

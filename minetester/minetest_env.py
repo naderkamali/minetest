@@ -142,6 +142,8 @@ class Minetest(gym.Env):
         # Define action and observation space
         self.max_mouse_move_x = self.display_size[0]
         self.max_mouse_move_y = self.display_size[1]
+        # TODO : make this a configurable value
+        self.num_items = 107 # How many items are in the Minetest tech tree????
         self.action_space = gym.spaces.Dict(
             {
                 **{key: gym.spaces.Discrete(2) for key in KEY_MAP.keys()},
@@ -153,6 +155,7 @@ class Minetest(gym.Env):
                         dtype=float,
                     ),
                 },
+                **{"CRAFT": gym.spaces.Discrete(self.num_items)},
             },
         )
         self.observation_space = gym.spaces.Box(

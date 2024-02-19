@@ -101,6 +101,7 @@ message Action {
     repeated KeyboardEvent keyEvents = 1;
     sint32 mouseDx = 2;
     sint32 mouseDy = 3;
+    sint32 craftingIndex = 4;
 }
 
 // TODO record general infos 

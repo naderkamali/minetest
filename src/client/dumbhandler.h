@@ -44,6 +44,7 @@ public:
 		pb_objects::Action action;
 		action.set_mousedx(mousespeed[0]);
 		action.set_mousedy(mousespeed[1]);
+		action.set_craftingindex(craftingIndex);
 		for (int i = pb_objects::KeyType::FORWARD; i !=  pb_objects::INTERNAL_ENUM_COUNT; ++i) {
 			pb_objects::KeyboardEvent* ev = action.add_keyevents();
 			pb_objects::KeyType keyType = static_cast<pb_objects::KeyType>(i);
@@ -115,6 +116,9 @@ public:
 	virtual v2s32 getMousePos() { return mousepos; }
 	virtual void setMousePos(s32 x, s32 y) { mousepos = v2s32(x, y); }
 
+	virtual int getCraftingIndex() { return craftingIndex; }
+	virtual void setCraftingIndex(int x) { craftingIndex = x; }
+
 	virtual s32 getMouseWheel()
 	{
 		s32 a = mouse_wheel;
@@ -180,6 +184,9 @@ private:
 	// Mouse observables
 	v2s32 mousepos;
 	v2s32 mousespeed;
+
+	// Crafting item observables
+	int craftingIndex;
 
 	// Player observables
 	float movementSpeed;
