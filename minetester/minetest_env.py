@@ -119,10 +119,10 @@ class Minetest(gym.Env):
         self.clientmods = clientmods
         self.servermods = servermods
         if self.sync_port:
-            self.servermods += ["rewards"]  # require the server rewards mod
+            self.servermods += ["rewards", "respawn"]  # require the server rewards mod
             self._enable_servermods()
         else:
-            self.clientmods += ["rewards"]  # require the client rewards med
+            self.clientmods += ["rewards", "respawn"]  # require the client rewards med
             # add client mod names in case they entail a server side component
             self.servermods += clientmods
             self._enable_clientmods()
@@ -285,38 +285,34 @@ class Minetest(gym.Env):
         )
 
         # Close Mintest processes
-        if self.server_process:
-            self.server_process.kill()
-        if self.client_process:
-            self.client_process.kill()
-
-        # (Re)start Minetest server
-        self.server_process = start_minetest_server(
-            self.minetest_executable,
-            self.config_path,
-            log_path,
-            self.server_port,
-            self.world_dir,
-            self.sync_port,
-            self.sync_dtime,
-            self.game_id,
-        )
-
-        # (Re)start Minetest client
-        self.client_process = start_minetest_client(
-            self.minetest_executable,
-            self.config_path,
-            log_path,
-            self.env_port,
-            self.server_port,
-            self.cursor_image_path,
-            self.client_name,
-            self.media_cache_dir,
-            sync_port=self.sync_port,
-            dtime=self.dtime,
-            headless=self.headless,
-            display=self.x_display,
-        )
+        if not self.server_process:        
+            # (start Minetest server
+            self.server_process = start_minetest_server(
+                self.minetest_executable,
+                self.config_path,
+                log_path,
+                self.server_port,
+                self.world_dir,
+                self.sync_port,
+                self.sync_dtime,
+                self.game_id,
+            )
+        if not self.client_process:
+            # start Minetest client
+            self.client_process = start_minetest_client(
+                self.minetest_executable,
+                self.config_path,
+                log_path,
+                self.env_port,
+                self.server_port,
+                self.cursor_image_path,
+                self.client_name,
+                self.media_cache_dir,
+                sync_port=self.sync_port,
+                dtime=self.dtime,
+                headless=self.headless,
+                display=self.x_display,
+            )
 
     def _check_world_dir(self):
         if self.world_dir is None:
