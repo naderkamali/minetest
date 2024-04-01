@@ -89,6 +89,7 @@ class Minetest(gym.Env):
 
         # Env objects
         self.last_obs = None
+        self.last_action = None
         self.render_fig = None
         self.render_img = None
 
@@ -391,6 +392,7 @@ class Minetest(gym.Env):
     def reset(self, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None):
         self._seed(seed=seed)
         if self.start_minetest:
+            self.start_minetest = not self.start_minetest
             if self.reset_world:
                 self._delete_world()
                 if self.reseed_on_reset:
@@ -398,15 +400,35 @@ class Minetest(gym.Env):
                 self._write_config()
             self._enable_servermods()
             self._reset_minetest()
-        self._reset_zmq()
+            self._reset_zmq()
 
-        # Receive initial observation
-        logging.debug("Waiting for first obs...")
-        byte_obs = self.socket.recv()
-        obs, _, _, _, _ = unpack_pb_obs(byte_obs)
-        self.last_obs = obs
-        logging.debug("Received first obs: {}".format(obs.shape))
-        return obs, {}
+            # Receive initial observation
+            logging.debug("Waiting for first obs...")
+            byte_obs = self.socket.recv()
+            obs, _, _, _, _ = unpack_pb_obs(byte_obs)
+            self.last_obs = obs
+            logging.debug("Received first obs: {}".format(obs.shape))
+            return obs, {}
+        else:
+            # Send action
+            action = self.last_action
+            action["AUX1"] = [1]
+            logging.debug("Sending (reset) action: {}".format(action))
+            pb_action = pack_pb_action(action)
+            self.socket.send(pb_action.SerializeToString())
+
+            # TODO more robust check for whether a server/client is alive while receiving observations
+            for process in [self.server_process, self.client_process]:
+                if process is not None and process.poll() is not None:
+                    return self.last_obs, 0.0, True, False, {}
+
+            # Receive observation
+            logging.debug("Waiting for obs...")
+            byte_obs = self.socket.recv()
+            obs, _, _, _, _ = unpack_pb_obs(byte_obs)
+            self.last_obs = obs
+
+            return self.last_obs, {}
 
     def step(self, action: Dict[str, Any]):
         # Send action
@@ -428,6 +450,7 @@ class Minetest(gym.Env):
         logging.debug("Waiting for obs...")
         byte_obs = self.socket.recv()
         next_obs, rew, done, info, last_action = unpack_pb_obs(byte_obs)
+        self.last_action = last_action
 
         if last_action:
             assert action == last_action

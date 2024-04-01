@@ -29,6 +29,7 @@ KEY_MAP = {
     "SLOT_7": KeyType.SLOT_7,
     "SLOT_8": KeyType.SLOT_8,
     "INVENTORY": KeyType.INVENTORY,
+    "AUX1": KeyType.AUX1,
 }
 INV_KEY_MAP = {value: key for key, value in KEY_MAP.items()}
 

@@ -26,7 +26,7 @@ if(NOT USE_SYSTEM_ZMQPP)
 		PATH_SUFFIXES zmqpp)
 
 	find_library(ZMQPP_LIBRARY NAMES zmqpp
-		PATHS ${CMAKE_SOURCE_DIR}/lib/zmqpp/build)
+		PATHS ${CMAKE_SOURCE_DIR}/lib/zmqpp/build/max-g++/)
 
 	message(${ZMQPP_INCLUDE_DIR})
 	message(${ZMQPP_LIBRARY})

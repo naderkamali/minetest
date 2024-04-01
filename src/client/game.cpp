@@ -1312,6 +1312,11 @@ void Game::run()
 			terminal = client->getTerminal();
 		}
 
+		if(input->isKeyDown(KeyType::AUX1)) {
+			std::wstring message = L"/respawn_on_reset";
+			client->sendChatMessage(message);
+		}
+
 		// send data out
 		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 		if(recorder && !firstIter) {

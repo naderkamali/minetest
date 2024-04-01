@@ -1,12 +1,12 @@
-local time_elapsed = 0
-local reset_interval = 10
+-- local time_elapsed = 0
+-- local reset_interval = 10
 
-minetest.register_on_joinplayer(
-    function(player)
-        SPAWNPOINT = player:get_pos()
-        NAME = player:get_player_name()
-    end
-)
+-- minetest.register_on_joinplayer(
+--     function(player)
+--         SPAWNPOINT = player:get_pos()
+--         NAME = player:get_player_name()
+--     end
+-- )
 
 
 local function findSpawnPos(pos)
@@ -38,19 +38,43 @@ local function findSpawnPos(pos)
 end
 
 
+-- Function to respawn the player randomly
+local function respawn_player(player)
+    local pos = findSpawnPos(player:getpos())  -- Use the function we defined earlier
+    player:setpos(pos)
+end
 
-minetest.register_globalstep(function(dtime)
-    time_elapsed = time_elapsed + dtime
+-- Register a chat command to trigger respawn
+minetest.register_chatcommand("respawn_on_reset", {
+    params = "",
+    description = "Respawn the player at a random location",
+    func = function(name, param)
+        minetest.chat_send_all("respawning")
+        print("respawning")
+        local player = minetest.get_player_by_name(name)
+        if player then
+            respawn_player(player)
+            REWARD = 0
+            return true, "Player respawned!"
+        else
+            return false, "Player not found!"
+        end
+    end,
+})
+
+
+-- minetest.register_globalstep(function(dtime)
+--     time_elapsed = time_elapsed + dtime
     
-    -- Check if the time threshold has been reached
-    if time_elapsed >= reset_interval then
-        -- Rollback changes made by the specific player
-        local actor = minetest.get_player_by_name(NAME)
-        SPAWNPOINT = findSpawnPos(SPAWNPOINT)
-        actor:moveto(SPAWNPOINT)
+--     -- Check if the time threshold has been reached
+--     if time_elapsed >= reset_interval then
+--         -- Rollback changes made by the specific player
+--         local actor = minetest.get_player_by_name(NAME)
+--         SPAWNPOINT = findSpawnPos(SPAWNPOINT)
+--         actor:moveto(SPAWNPOINT)
         
-        -- Reset the time elapsed
-        time_elapsed = 0
-        REWARD = 0
-    end
-end)
+--         -- Reset the time elapsed
+--         time_elapsed = 0
+--         REWARD = 0
+--     end
+-- end)
